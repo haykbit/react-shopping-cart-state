@@ -4,6 +4,19 @@ import Home from "./pages/Home";
 
 import * as api from "./api";
 
+function createCartItem(cartItem) {
+  return {
+    id: cartItem.id,
+    title: cartItem.title,
+    img: cartItem.img,
+    price: cartItem.price,
+    unitsInStock: cartItem.unitsInStock,
+    createdAt: cartItem.createdAt,
+    updatedAt: cartItem.updatedAt,
+    quantity: cartItem.quantity + 1,
+  };
+}
+
 class App extends Component {
   constructor(props) {
     super(props);
@@ -30,11 +43,45 @@ class App extends Component {
     });
   }
 
-  // handleAddToCart(productId) {}
+  handleAddToCart(productId) {
+    const { cartItems, products } = this.state;
+    const cartItem = cartItems.find((item) => item.id === productId);
+    const thisProduct = products.find((product) => product.id === productId);
+
+    if (cartItem) {
+      const addedItem = cartItems.map((item) => {
+        if (item.id !== productId) {
+          return item;
+        }
+        if (item.quantity >= item.unitsInStock) {
+          return item;
+        }
+
+        return {
+          ...item,
+          quantity: item.quantity + 1,
+        };
+      });
+      this.setState({ cartItems: addedItem });
+    } else {
+      // stat es el array con el estado anterior stat.cartItems recoge el array del estado y le añade el nuevo item = cartProduct
+      const cartProduct = createCartItem(thisProduct);
+      this.setState((state) => ({
+        cartItems: [...state.cartItems, cartProduct],
+      }));
+    }
+  }
 
   // handleChange(event, productId) {}
 
-  // handleRemove(productId) {}
+  handleRemove(productId) {
+    const { cartItems } = this.state;
+    const newCart = cartItems.filter((item) => item.id !== productId);
+
+    this.setState({
+      cartItems: newCart,
+    });
+  }
 
   // handleDownVote(productId) {}
 
@@ -61,8 +108,12 @@ class App extends Component {
         handleDownVote={() => {}}
         handleUpVote={() => {}}
         handleSetFavorite={() => {}}
-        handleAddToCart={() => {}}
-        handleRemove={() => {}}
+        handleAddToCart={(id) => {
+          this.handleAddToCart(id);
+        }}
+        handleRemove={(id) => {
+          this.handleRemove(id);
+        }}
         handleChange={() => {}}
       />
     );
